@@ -48,37 +48,14 @@ defmodule PodcastBackuper do
 
   # from https://elixirforum.com/t/how-to-download-big-files/9173/3
   def download!(file_url, filename) do
-    file =
-      if File.exists?(filename) do
-        File.open!(filename, [:append])
-      else
-        File.touch!(filename)
-        File.open!(filename, [:append])
-      end
+    %HTTPoison.Response{body: body} =
+      HTTPoison.get!(
+        file_url,
+        [],
+        follow_redirect: true
+      )
 
-    %HTTPoison.AsyncResponse{id: ref} =
-      HTTPoison.get!(file_url, %{}, follow_redirect: true, stream_to: self())
-
-    append_loop(ref, file)
-  end
-
-  defp append_loop(ref, file) do
-    receive do
-      %HTTPoison.AsyncChunk{chunk: chunk, id: ^ref} ->
-        IO.binwrite(file, chunk)
-        append_loop(ref, file)
-
-      %HTTPoison.AsyncEnd{id: ^ref} ->
-        File.close(file)
-
-      # need something to handle errors like request timeout and such
-      # otherwise it will loop forever
-      # don't know what httpoison returns in case of an error ...
-      # you can inspect `_other` below to find out
-      # and match on the error to exit the loop early
-      _other ->
-        append_loop(ref, file)
-    end
+    File.write!(filename, body)
   end
 end
 
@@ -104,30 +81,10 @@ end)
 
 # IO.puts("The title of this podcast is \"#{vira[:title]}\"")
 
-# body = HTTPoison.get!("https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded_episode/6031562/6031562-1591715087730-343b33e9ec68f.jpg", ["User-Agent": "Elixir"],
-#  [recv_timeout: 300_000_00]).body
-# File.write!("./oi.jpg", body)
-
-# NAO FUNCIONA
-# PodcastBackuper.download!(
-#   "https://anchor.fm/s/248c0568/podcast/play/14948185/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fproduction%2F2020-5-9%2F80802802-44100-2-38786b2278ffe.mp3",
-#   "./ep0.mp3"
-# )
-
-# ESTE FUNCIONA
-# PodcastBackuper.download!(
-# "https://d3ctxlq1ktw2nl.cloudfront.net/production/2020-5-9/80802802-44100-2-38786b2278ffe.mp3",
-# "./funfa.mp3"
-# )
-
-filename =
+url =
   "https://anchor.fm/s/248c0568/podcast/play/14948185/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fproduction%2F2020-5-9%2F80802802-44100-2-38786b2278ffe.mp3"
 
-%HTTPoison.Response{body: body} =
-  HTTPoison.get!(
-    filename,
-    [],
-    follow_redirect: true
-  )
-
-File.write!("./ep0.mp3", body)
+PodcastBackuper.download!(
+  url,
+  "./ep0.mp3"
+)
