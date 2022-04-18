@@ -5,16 +5,19 @@ defmodule PodcastBackuper do
 
   import SweetXml
 
-  defp read_RSS(url) do
+  def read_RSS(url) do
     HTTPoison.start()
     HTTPoison.get!(url)
   end
 
   def process_url(url) do
     doc = read_RSS(url)
+    process_body(doc.body)
+  end
 
+  def process_body(body) do
     episodes =
-      doc.body
+      body
       |> xpath(
         ~x"//item"l,
         title: ~x"./title/text()"s,
@@ -35,10 +38,10 @@ defmodule PodcastBackuper do
       )
 
     [
-      title: doc.body |> xpath(~x"//channel/title/text()"),
-      description: doc.body |> xpath(~x"//channel/description/text()"),
-      link: doc.body |> xpath(~x"//channel/link/text()"),
-      logo_link: doc.body |> xpath(~x"//channel/image/url/text()"),
+      title: body |> xpath(~x"//channel/title/text()"),
+      description: body |> xpath(~x"//channel/description/text()"),
+      link: body |> xpath(~x"//channel/link/text()"),
+      logo_link: body |> xpath(~x"//channel/image/url/text()"),
       episodes: episodes
     ]
   end
@@ -78,13 +81,24 @@ defmodule PodcastBackuper do
   end
 end
 
-["https://anchor.fm/s/248c0568/podcast/rss", "https://anchor.fm/s/10f2ba74/podcast/rss"]
+[
+  "https://anchor.fm/s/248c0568/podcast/rss",
+  "https://anchor.fm/s/10f2ba74/podcast/rss"
+]
 |> Enum.map(fn rss ->
   data = PodcastBackuper.process_url(rss)
   IO.puts("RSS URL #{rss}")
-  IO.puts("The title of this podcast is \"#{data[:title]} \"")
+  IO.puts("The title of this podcast is \"#{data[:title]}\"")
   IO.puts("The link of this podcast is #{data[:link]}")
 end)
+
+# As HTTPoison can't read  "http://feeds.libsyn.com/131788/rss",
+# I saved the RSS as a file
+vira =
+  File.read!("./sample_rsss/viracasacas.rss")
+  |> PodcastBackuper.process_body()
+
+IO.puts("The title of this podcast is \"#{vira[:title]}\"")
 
 # body = HTTPoison.get!("https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded_episode/6031562/6031562-1591715087730-343b33e9ec68f.jpg", ["User-Agent": "Elixir"],
 #  [recv_timeout: 300_000_00]).body
