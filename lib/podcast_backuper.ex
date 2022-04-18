@@ -7,7 +7,7 @@ defmodule PodcastBackuper do
 
   def read_RSS(url) do
     HTTPoison.start()
-    HTTPoison.get!(url)
+    HTTPoison.get!(url, [], follow_redirect: true)
   end
 
   def process_url(url) do
@@ -56,7 +56,8 @@ defmodule PodcastBackuper do
         File.open!(filename, [:append])
       end
 
-    %HTTPoison.AsyncResponse{id: ref} = HTTPoison.get!(file_url, %{}, stream_to: self())
+    %HTTPoison.AsyncResponse{id: ref} =
+      HTTPoison.get!(file_url, %{}, follow_redirect: true, stream_to: self())
 
     append_loop(ref, file)
   end
@@ -82,6 +83,7 @@ defmodule PodcastBackuper do
 end
 
 [
+  # "http://feeds.libsyn.com/131788/rss",
   "https://anchor.fm/s/248c0568/podcast/rss",
   "https://anchor.fm/s/10f2ba74/podcast/rss"
 ]
@@ -92,24 +94,40 @@ end
   IO.puts("The link of this podcast is #{data[:link]}")
 end)
 
-# As HTTPoison can't read  "http://feeds.libsyn.com/131788/rss",
+# As HTTPoison couldn't read  http://feeds.libsyn.com/131788/rss
+# from https://viracasacas.libsyn.com/
 # I saved the RSS as a file
-vira =
-  File.read!("./sample_rsss/viracasacas.rss")
-  |> PodcastBackuper.process_body()
+# but it can with [follow_redirect: true]
+# vira =
+#   File.read!("./sample_rsss/viracasacas.rss")
+#   |> PodcastBackuper.process_body()
 
-IO.puts("The title of this podcast is \"#{vira[:title]}\"")
+# IO.puts("The title of this podcast is \"#{vira[:title]}\"")
 
 # body = HTTPoison.get!("https://d3t3ozftmdmh3i.cloudfront.net/production/podcast_uploaded_episode/6031562/6031562-1591715087730-343b33e9ec68f.jpg", ["User-Agent": "Elixir"],
 #  [recv_timeout: 300_000_00]).body
 # File.write!("./oi.jpg", body)
 
+# NAO FUNCIONA
 # PodcastBackuper.download!(
 #   "https://anchor.fm/s/248c0568/podcast/play/14948185/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fproduction%2F2020-5-9%2F80802802-44100-2-38786b2278ffe.mp3",
 #   "./ep0.mp3"
 # )
 
+# ESTE FUNCIONA
 # PodcastBackuper.download!(
 # "https://d3ctxlq1ktw2nl.cloudfront.net/production/2020-5-9/80802802-44100-2-38786b2278ffe.mp3",
 # "./funfa.mp3"
 # )
+
+filename =
+  "https://anchor.fm/s/248c0568/podcast/play/14948185/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fproduction%2F2020-5-9%2F80802802-44100-2-38786b2278ffe.mp3"
+
+%HTTPoison.Response{body: body} =
+  HTTPoison.get!(
+    filename,
+    [],
+    follow_redirect: true
+  )
+
+File.write!("./ep0.mp3", body)
