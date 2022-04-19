@@ -38,10 +38,10 @@ defmodule PodcastBackuper do
       )
 
     [
-      title: body |> xpath(~x"//channel/title/text()"),
-      description: body |> xpath(~x"//channel/description/text()"),
-      link: body |> xpath(~x"//channel/link/text()"),
-      logo_link: body |> xpath(~x"//channel/image/url/text()"),
+      title: body |> xpath(~x"//channel/title/text()"s),
+      description: body |> xpath(~x"//channel/description/text()"s),
+      link: body |> xpath(~x"//channel/link/text()"s),
+      logo_link: body |> xpath(~x"//channel/image/url/text()"s),
       episodes: episodes
     ]
   end
@@ -58,33 +58,3 @@ defmodule PodcastBackuper do
     File.write!(filename, body)
   end
 end
-
-[
-  # "http://feeds.libsyn.com/131788/rss",
-  "https://anchor.fm/s/248c0568/podcast/rss",
-  "https://anchor.fm/s/10f2ba74/podcast/rss"
-]
-|> Enum.map(fn rss ->
-  data = PodcastBackuper.process_url(rss)
-  IO.puts("RSS URL #{rss}")
-  IO.puts("The title of this podcast is \"#{data[:title]}\"")
-  IO.puts("The link of this podcast is #{data[:link]}")
-end)
-
-# As HTTPoison couldn't read  http://feeds.libsyn.com/131788/rss
-# from https://viracasacas.libsyn.com/
-# I saved the RSS as a file
-# but it can with [follow_redirect: true]
-# vira =
-#   File.read!("./sample_rsss/viracasacas.rss")
-#   |> PodcastBackuper.process_body()
-
-# IO.puts("The title of this podcast is \"#{vira[:title]}\"")
-
-url =
-  "https://anchor.fm/s/248c0568/podcast/play/14948185/https%3A%2F%2Fd3ctxlq1ktw2nl.cloudfront.net%2Fproduction%2F2020-5-9%2F80802802-44100-2-38786b2278ffe.mp3"
-
-PodcastBackuper.download!(
-  url,
-  "./ep0.mp3"
-)

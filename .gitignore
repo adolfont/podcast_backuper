@@ -24,3 +24,9 @@ podcast_backuper-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Ignore audio and image files
+.mp3
+.m4a
+.jpg
+.png
