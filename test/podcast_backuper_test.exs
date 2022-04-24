@@ -29,6 +29,17 @@ defmodule PodcastBackuperTest do
     end
   end
 
+  # describe "Download the audio file of the latest episode of a podcast" do
+  #   test "Downloads an audio file given a RSS", state do
+
+  #     download_folder = "/home/ppgca/Downloads/podcast_backuper/ProfessorAdolfoNeto"
+  #     data = state[:professor_adolfo_neto]
+
+  #     assert data[:episodes] == 2
+
+  #   end
+  #   end
+
   describe "Downloading audio files" do
     test "Downloads an audio file" do
       url =
