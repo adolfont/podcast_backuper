@@ -8,6 +8,6 @@
 
 | Name | Site | RSS | YouTube | Comments |
 |------|------|-----|---------|----------|
-| Tech Leadership Rocks     |   https://techleadership.rocks/   |     |         |          |
+| Tech Leadership Rocks     |   https://techleadership.rocks/   |     |     https://www.youtube.com/playlist?list=PLMySx5YVYPGAWOK8N3zKPP4ehGZkZWC9f    |          |
 |      |      |     |         |          |
 |      |      |     |         |          |
